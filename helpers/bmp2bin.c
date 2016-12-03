@@ -10,7 +10,7 @@
  * 
  * Created to upload images on the MARS Simulator (Assembly MIPS).
  * 
- * Adapted from CS50's problem-set 4.
+ * Adapted from CS50's problem-set 4 
  */
        
 #include <stdio.h>
@@ -66,11 +66,12 @@ int main(int argc, char* argv[])
         return 4;
     }
     
-    // Number of bytes to be jumped to get the raw bitmap.
-    int jump = bf.bfSize - bi.biSizeImage;
+    // If width is not divisible by 4, a padding is present, so we must ignore it.
+    int realWidth = (bi.biWidth % 4 ? bi.biSizeImage / bi.biHeight : bi.biWidth);
     
+    // Jumps to the raw bitmap
     rewind(inptr);
-    fseek(inptr, jump, SEEK_SET);
+    fseek(inptr, 1078, SEEK_SET);
     
     // Reads all the raw bitmap into an array.
     BYTE rawBitmap[bi.biSizeImage];
@@ -79,13 +80,14 @@ int main(int argc, char* argv[])
     // Iterates from the last line to the first (since it is stored upside-down)
     int index;
     for (int i = bi.biHeight-1; i >= 0; i--) {
-        index = bi.biWidth * i;
+        index = realWidth * i;
         for (int j = 0; j < bi.biWidth; j++) {
             
-            // For some reason Paint stores true RGB colors as these three
-            // handled in the ifs/elses, so I had to manually change them
-            // in order to save fidelity to the original colors.
-            // Haven't tested what would happen with the real 0xfc, 0xf9 and 0xfa colors.
+            /* For some reason Paint stores true RGB colors as these three
+             * handled in the ifs/elses, so I had to manually change them
+             * in order to save fidelity to the original colors.
+             * Haven't tested what would happen with the real 0xfc, 0xf9 and 0xfa colors.
+             */
             if (rawBitmap[index+j] == 0xfc) rawBitmap[index+j] = 0xc0;
             else if (rawBitmap[index+j] == 0xf9) rawBitmap[index+j] = 0x07;
             else if (rawBitmap[index+j] == 0xfa) rawBitmap[index+j] = 0x38;
