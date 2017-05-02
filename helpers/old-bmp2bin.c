@@ -56,16 +56,10 @@ int main(int argc, char* argv[])
     BITMAPINFOHEADER bi;
     fread(&bi, sizeof(BITMAPINFOHEADER), 1, inptr);
 
-    // Checks the file format (24-bit bitmap)
-    if (bf.bfType != 0x4d42 || bf.bfOffBits != 54 || bi.biSize != 40 || 
-        bi.biBitCount != 24 || bi.biCompression != 0)
+    // Checks the file format (8-bit bitmap)
+    if (bf.bfType != 0x4d42 || bf.bfOffBits != 1078 || bi.biSize != 40 || 
+        bi.biBitCount != 8 || bi.biCompression != 0)
     {
-        
-        fprintf(stderr, "%s\nbftype %x bfoff %d bisize %d bitc %d bic %d.\n", argv[1],
-        bf.bfType, bf.bfOffBits, bi.biSize, bi.biBitCount, bi.biCompression);
-        fprintf(stderr, "Unsupported file format or different bitmap type.\n");
-        fprintf(stderr, "Unsupported file format or different bitmap type.\n");
-        fprintf(stderr, "Unsupported file format or different bitmap type.\n");
         fclose(outptr);
         fclose(inptr);
         fprintf(stderr, "Unsupported file format or different bitmap type.\n");
@@ -73,12 +67,11 @@ int main(int argc, char* argv[])
     }
     
     // If width is not divisible by 4, a padding is present, so we must ignore it.
-    int realWidth = ((bi.biWidth*3 + 3) / 4)*4;
+    int realWidth = (bi.biWidth % 4 ? bi.biSizeImage / bi.biHeight : bi.biWidth);
     
     // Jumps to the raw bitmap
     rewind(inptr);
-    fseek(inptr, bf.bfOffBits, SEEK_SET);
-    bi.biSizeImage = bi.biWidth * bi.biHeight * 3;
+    fseek(inptr, 1078, SEEK_SET);
     
     // Reads all the raw bitmap into an array.
     BYTE rawBitmap[bi.biSizeImage];
@@ -90,18 +83,16 @@ int main(int argc, char* argv[])
         index = realWidth * i;
         for (int j = 0; j < bi.biWidth; j++) {
             
-            RGBTRIPLE rgb;
-            rgb.rgbtBlue = rawBitmap[index+j*3];
-            rgb.rgbtGreen = rawBitmap[index+j*3+1];
-            rgb.rgbtRed = rawBitmap[index+j*3+2];
-
-            BYTE newByte = ((rgb.rgbtBlue * 3 / 255) << 6) + ((rgb.rgbtGreen * 7 / 255) << 3) + (rgb.rgbtRed * 7 / 255);    
-            
-            if (newByte == 0) printf("%d %d %d %d\n", rgb.rgbtRed, rgb.rgbtGreen, rgb.rgbtBlue, newByte);
-            fwrite(&newByte, 1, sizeof(BYTE), outptr);          
-            
-            
+            /* For some reason Paint stores true RGB colors as these three
+             * handled in the ifs/elses, so I had to manually change them
+             * in order to save fidelity to the original colors.
+             * Haven't tested what would happen with the real 0xfc, 0xf9 and 0xfa colors.
+             */
+            if (rawBitmap[index+j] == 0xfc) rawBitmap[index+j] = 0xc0;
+            else if (rawBitmap[index+j] == 0xf9) rawBitmap[index+j] = 0x07;
+            else if (rawBitmap[index+j] == 0xfa) rawBitmap[index+j] = 0x38;
         }
+        fwrite(&rawBitmap[index], 1, bi.biWidth, outptr);
     }
 
     // close infile
@@ -113,4 +104,3 @@ int main(int argc, char* argv[])
     // that's all folks
     return 0;
 }
-
