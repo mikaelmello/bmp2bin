@@ -18,11 +18,9 @@
 
 #include "bmp.h"
 
-int main(int argc, char* argv[])
-{
+int main(int argc, char* argv[]) {
     // ensure proper usage
-    if (argc != 3)
-    {
+    if (argc != 3) {
         printf("Usage: ./copy [bitmap file input] [binary file output]\ne.g.:  ./copy monster.bmp monster.bin\n");
         return 1;
     }
@@ -33,16 +31,14 @@ int main(int argc, char* argv[])
 
     // open input file 
     FILE* inptr = fopen(infile, "r");
-    if (inptr == NULL)
-    {
+    if (inptr == NULL) {
         printf("Could not open %s.\n", infile);
         return 2;
     }
 
     // open output file
     FILE* outptr = fopen(outfile, "wb");
-    if (outptr == NULL)
-    {
+    if (outptr == NULL) {
         fclose(inptr);
         fprintf(stderr, "Could not create %s.\n", outfile);
         return 3;
@@ -58,14 +54,7 @@ int main(int argc, char* argv[])
 
     // Checks the file format (24-bit bitmap)
     if (bf.bfType != 0x4d42 || bf.bfOffBits != 54 || bi.biSize != 40 || 
-        bi.biBitCount != 24 || bi.biCompression != 0)
-    {
-        
-        fprintf(stderr, "%s\nbftype %x bfoff %d bisize %d bitc %d bic %d.\n", argv[1],
-        bf.bfType, bf.bfOffBits, bi.biSize, bi.biBitCount, bi.biCompression);
-        fprintf(stderr, "Unsupported file format or different bitmap type.\n");
-        fprintf(stderr, "Unsupported file format or different bitmap type.\n");
-        fprintf(stderr, "Unsupported file format or different bitmap type.\n");
+        bi.biBitCount != 24 || bi.biCompression != 0) {
         fclose(outptr);
         fclose(inptr);
         fprintf(stderr, "Unsupported file format or different bitmap type.\n");
@@ -97,10 +86,7 @@ int main(int argc, char* argv[])
 
             BYTE newByte = ((rgb.rgbtBlue * 3 / 255) << 6) + ((rgb.rgbtGreen * 7 / 255) << 3) + (rgb.rgbtRed * 7 / 255);    
             
-            if (newByte == 0) printf("%d %d %d %d\n", rgb.rgbtRed, rgb.rgbtGreen, rgb.rgbtBlue, newByte);
             fwrite(&newByte, 1, sizeof(BYTE), outptr);          
-            
-            
         }
     }
 
