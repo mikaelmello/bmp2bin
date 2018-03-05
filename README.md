@@ -1,10 +1,25 @@
-## How to use bmp2bin.c
+# bmp2bin
+
+This tool was created to make it easier for students to upload their own images into Assembly MIPS' memory mapped display, since it only recognizes raw binary data. So it strips the raw bitmap from a bitmap file by removing the headers and bytes that are for padding or are out of order.
+
+## Installation
+
+```bash
+$ git clone https://github.com/MikaelMello/bmp2bin.git
+$ cd bmp2bin
+$ make
+```
+
+bmp2bin is installed on `~/bin/bmp2bin` and you can use it by executing the command `bmp2bin`.
+
+## How to use bmp2bin
 
 In case you intend to use your own images on MARS, using 1-byte per color in the Bitmap display.
 
 Usage Instructions:
  
-- Compile the source-code using (preferrably) "clang -O0 -std=c11 bmp2bin.c -o bmp2bin"
-- Save your image on Paint as a 24-bit Bitmap file, all RGB colors will be converted to 8-bit ones. This part is prefered to be done on Windows because I am not sure if different softwares use different headers for a 24-bit bitmap file.
-- Execute the program doing ./bmp2bin yourimage.bmp yourimage.bin
-- Now only the raw bitmap of your image is stored in the binary file, load it with syscalls and store it on the VGA memory as you want.
+- `bmp2bin image.bmp image.bin`
+- Now you can load your binary file into MARS.
+
+**Note**: For now, only 24-bits (RGB colors) bitmap files are supported.
+**Note**: For now, all bitmap files should be saved via Microsoft Window's Paint because some other softwares have different headers and this may lead `bmp2bin` to have undefined behavior.
